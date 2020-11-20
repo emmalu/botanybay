@@ -1,0 +1,106 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Botany Bay</title>
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light-blue/main.css" />
+  <!-- <link rel="stylesheet" href="https://js.arcgis.com/4.16/esri/css/main.css"> -->
+  <script src="https://js.arcgis.com/4.17/"></script>
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/TileLayer",
+      "esri/Graphic",
+      "esri/widgets/Locate",
+      "esri/widgets/Swipe",
+      "esri/widgets/Home",
+      "esri/widgets/Measurement"
+    ], function(Map, MapView, TileLayer, Graphic, Locate, Swipe, Home, Measurement) {
+
+      var map = new Map({
+        basemap: "gray-vector"
+      });
+
+      var view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [-80.234063,32.542521],
+        zoom: 15,
+        ui: {
+          components: []
+        }
+      });
+
+      var layerProperty = new TileLayer({
+        // URL points to a cached tiled map service hosted on ArcGIS Server
+        url: "https://arcweb.dnr.sc.gov/server/rest/services/Geology/Botany_201909161416/MapServer",
+        opacity: .5
+      });
+      map.add(layerProperty);
+
+      var layer1949 = new TileLayer({
+        url: "https://tiles.arcgis.com/tiles/acgZYxoN5Oj8pDLa/arcgis/rest/services/botbayImagery1949/MapServer"
+        //url: "https://tiles.arcgis.com/tiles/acgZYxoN5Oj8pDLa/arcgis/rest/services/botbayImagery1949/MapServer?cacheKey=8569779a116f46fa"
+
+      });
+      map.add(layer1949);
+
+      var layer2019 = new TileLayer({
+        url: "https://arcweb.dnr.sc.gov/server/rest/services/Imagery/BotanyAerial071619_201909161549/MapServer"
+        /* portalItem: {
+            id: "1421a76cb10c46e6b26603c443ff3bb3"
+        } */
+      });
+      map.add(layer2019);
+
+      var locateWidget = new Locate({
+        view: view,   // Attaches the Locate button to the view
+        graphic: new Graphic({
+            symbol: { type: "simple-marker" }  // overwrites the default symbol used for the
+        })
+      });
+      // create a new Swipe widget
+      const swipe = new Swipe({
+          leadingLayers: [layer1949],
+          trailingLayers: [layer2019],
+          direction: "vertical",
+          dragLabel: "Drag to see the changes",
+          position: 35, // set position of widget to 35%
+          visibleElements: {
+            divider: false,
+            handle: true // handle will not display
+          },
+          view: view
+      });
+      const measurement = new Measurement({
+        view: view,
+        activeTool: "distance",
+        unit: "us-feet"
+      });
+      var homeButton = new Home({
+        view: view
+      });
+
+      // add the widgets to the view
+      view.ui.add(swipe);
+      view.ui.add(measurement, "top-left");
+      view.ui.add(homeButton, "top-left");
+      view.ui.add(locateWidget, "top-left");
+
+
+    });
+  </script>
+</head>
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>
